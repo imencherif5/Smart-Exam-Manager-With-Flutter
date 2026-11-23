@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Préparer un QCM</title>
+<style>
+body{font-family:sans-serif;max-width:720px;margin:1rem auto;padding:0 1rem}
+.q{border:1px solid #ccc;border-radius:8px;padding:.8rem;margin:.8rem 0}
+input[type=text]{width:100%;padding:.4rem;margin:.2rem 0;box-sizing:border-box}
+.o{display:flex;gap:.4rem;align-items:center}button{padding:.4rem .8rem;margin:.2rem 0}
+</style>
+<h1>Préparer un QCM</h1>
+<input type="text" id="title" placeholder="Titre de l'examen">
+<div id="list"></div>
+<button onclick="addQ()">+ Question</button> <button onclick="exp()">Exporter en JSON</button>
+<p><small>Cochez la case à gauche de chaque bonne réponse (2 à 5 propositions, 30 questions maximum).</small></p>
+<script>
+const list = document.getElementById('list');
+function addOpt(btn){
+  const d = document.createElement('div'); d.className = 'o';
+  d.innerHTML = '<input type="checkbox" title="Bonne réponse"><input type="text" placeholder="Proposition"><button onclick="this.parentNode.remove()">✕</button>';
+  btn.before(d);
+}
+function addQ(){
+  const q = document.createElement('div'); q.className = 'q';
+  q.innerHTML = '<input type="text" class="qt" placeholder="Question"><button onclick="addOpt(this)">+ Proposition</button> <button onclick="this.parentNode.remove()">Supprimer la question</button>';
+  list.appendChild(q);
+  const b = q.querySelector('button'); addOpt(b); addOpt(b);
+}
+function exp(){
+  const questions = [...list.children].map(q => ({
+    text: q.querySelector('.qt').value.trim(),
+    options: [...q.querySelectorAll('.o')].map(o => ({
+      text: o.querySelector('input[type=text]').value.trim(),
+      correct: o.querySelector('input[type=checkbox]').checked
+    }))
+  }));
+  const data = { title: document.getElementById('title').value.trim(), questions };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'}));
+  a.download = (data.title || 'qcm') + '.json'; a.click();
+}
+addQ();
+</script>
+</html>
